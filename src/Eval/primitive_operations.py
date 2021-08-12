@@ -1,21 +1,11 @@
-rom scipy import special, stats, spatial
+from scipy import special, stats, spatial
 import numpy as np
 import itertools
-​
-#################################################################################################
-# Basic Operations
-​
 ​
 def average(data):
     if len(data) == 0:
         return 0
     return sum(data) / len(data)
-​
-​
-#################################################################################################
-​
-#################################################################################################
-# Normalization Functions
 ​
 ​
 def sum_normalization(scores):
@@ -28,11 +18,7 @@ def sum_normalization(scores):
 ​
 ​
 softmax = special.softmax
-#################################################################################################
-​
-#################################################################################################
-# Distance Functions
-​
+
 ​
 def L1_distance(x, y):
     return np.linalg.norm((x - y), ord=1)
@@ -56,11 +42,6 @@ def KL_divergence(x, y):
 ​
 ​
 JS_divergence = spatial.distance.jensenshannon
-#################################################################################################
-​
-#################################################################################################
-# Similarity Functions
-​
 ​
 def cosine(x, y):
     if np.linalg.norm(x, ord=2) <= 10**(-8) or np.linalg.norm(y, ord=2) <= 10**(-8):
@@ -72,12 +53,7 @@ def cosine(x, y):
 def inner_product(x, y):
     return np.dot(x, y)
 ​
-​
-#################################################################################################
-​
-#################################################################################################
-# Probability Distributions
-​
+
 ​
 def get_uniform_distribution(length):
     distribution = np.ones(length) / length
@@ -85,6 +61,4 @@ def get_uniform_distribution(length):
     if (total != 1):
         distribution[-1] += 1 - total
     return distribution
-​
-​
-#################################################################################################
+

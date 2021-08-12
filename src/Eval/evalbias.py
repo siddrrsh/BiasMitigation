@@ -1,12 +1,6 @@
 '''
-System Requirements: Responsibly (pip install responsibly), Gensim (pip install gensim)
-Must run using 'pythonw' not 'python3/python' (Responsibly.ai requirement as part of Anaconda)
-
-
-Uses Responsibly.ai:
-Bolukbasi et al. (2016) bias measure and debiasing - responsibly.we.bias
-WEAT measure - responsibly.we.weat
-Gonen et al. (2019) clustering as classification of biased neutral words - responsibly.we.bias.BiasWordEmbedding.plot_most_biased_clustering()
+System Requirements: Gensim (pip install gensim)
+Must run using 'pythonw' not 'python3/python' (Gensim requirement as part of Anaconda)
 
 Raw Approach:
 Word Embedding Association Test (WEAT) - Caliskan et al. (2017)
@@ -15,14 +9,13 @@ Mean Average Cosine (MAC) - Manzini et al. (2019)
 '''
 
 import subprocess
-from responsibly.we import GenderBiasWE
 from gensim.test.utils import datapath
 from gensim.models import KeyedVectors
 from gensim import downloader
-#from wefe import WordEmbeddingModel, Query, WEAT
-#from wefe.utils import run_queries
-#from wefe.datasets import load_weat
 import gensim.downloader as api
+from word_list import target_words, aligned_word_lists
+from aligned_estimators import compute_all_aligned_estimates
+import pandas as pd
 import numpy as np
 import gensim
 import numpy
@@ -36,7 +29,7 @@ def run(runfile):
 
 def main():
 	print("Bias Evaluation Program: This program performs evaluation on existing word embeddings.")
-	embeddings_src = "pretrained_embeddings/"
+	embeddings_src = "../Pretrained_Embeddings/"
 	val = input("Please specify the embeddings you wish to use by inputting an integer based on the following list of options: 1 -> 'Bolukbasi with CDA', 2 -> 'Bolukbasi with no CDA', 3 -> 'pretrained with CDA', 4 -> 'pretrained without CDA': ")
 	val = int(val)
 	if val == 1:
@@ -50,7 +43,7 @@ def main():
 	else:
 		print("You selected an invalid option. Try again.")
 	E = embeddings_src
-	getMetrics(E)
+	evalAlignedBias(E)
 
 
 
@@ -72,7 +65,7 @@ def prepend_line(file_name, line):
 
 
 def getMetrics(E):
-	E = "pretrained_embeddings/modified_embeddings.w2v"
+	E = "../Pretrained_Embeddings/modified_embeddings.w2v"
 	f = open(E, "r")
 	data = f.read()
 	words = data.split()
@@ -80,45 +73,30 @@ def getMetrics(E):
 	size = len(words)/(dim+1) 
 	line_to_add = str(int(size)) + " " + str(dim) # length + dimension
 	prepend_line(E, line_to_add)
-
 	model = KeyedVectors.load_word2vec_format(E, binary=False)
-	w2v_gender_bias_we = GenderBiasWE(model)
-	print(w2v_gender_bias_we.calc_direct_bias())
 
 
-def WEAT(E):
-	word2vec_model = WordEmbeddingModel(E)
+# [embeddings] - Map from words to vectors
+# [A1], [A2] - Lists of words for the two social groups of interest (e.g. male, female)
+# [target_words] - The words bias will be computed with respect to (e.g. professions)
+# [pooling_operation] - Generally abs(); absolute value encodes intuition that if X is male biased and Y is female-biased, these bias should not "cancel"
+# [verbose] - Additionally return per-word bias scores
 
-	# target sets (sets of popular names in the US)
-	male_names = ['John', 'Paul', 'Mike', 'Kevin', 'Steve', 'Greg', 'Jeff', 'Bill']
-	female_names = ['Amy', 'Joan', 'Lisa', 'Sarah', 'Diana', 'Kate', 'Ann', 'Donna']
+def evalAlignedBias(E):
+	results = pd.DataFrame()
+	seed_pairs = aligned_word_lists
+	professions = target_words['bolukbasi_professions']
+	pooling = abs()
+	compute_all_aligned_estimates(E, seed_pairs, professions, pooling, verbose=False)
 
-	#attribute sets
-	career = ['executive', 'management', 'professional', 'corporation',
-         'salary', 'office', 'business', 'career']
-	family = ['home', 'parents', 'children', 'family', 'cousins', 'marriage',
-         'wedding', 'relatives']
 
-	gender_occupation_query = Query([male_names, female_names],
-                                [career, family],
-                                ['Male names', 'Female names'],
-                                ['Career', 'Family'])
-	weat = WEAT()
-	results = weat.run_query(gender_occupation_query, word2vec_model)
-	# Load the sets used in the weat case study
-	weat_wordsets = load_weat()
 
-	gender_math_arts_query = Query(
-    	[male_names, female_names],
-    	[weat_wordsets['math'], weat_wordsets['arts']],
-    	['Male names', 'Female names'],
-    	['Math', 'Arts'])
 
-	gender_science_arts_query = Query(
-    	[male_names, female_names],
-    	[weat_wordsets['science'], weat_wordsets['arts_2']],
-    	['Male names', 'Female names'],
-    	['Science', 'Arts'])
+
+
+
+
+
 '''
 
 

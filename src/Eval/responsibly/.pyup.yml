@@ -1,6 +1,0 @@
-search: False
-
-requirements:
-  - .pyup/requirements.txt
-
-branch: master
