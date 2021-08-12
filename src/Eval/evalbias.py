@@ -2,7 +2,7 @@
 System Requirements: Gensim (pip install gensim)
 Must run using 'pythonw' not 'python3/python' (Gensim requirement as part of Anaconda)
 
-Raw Approach:
+Metrics we compute:
 Word Embedding Association Test (WEAT) - Caliskan et al. (2017)
 Relative Norm Distance (RND) - Garg et al. (2018), which has two variations (cosine and euclidean)
 Mean Average Cosine (MAC) - Manzini et al. (2019)
@@ -20,6 +20,7 @@ from WordEmbedding import WordEmbedding
 import pandas as pd
 import numpy as np
 import numpy
+import sys
 import re
 import os
 
@@ -31,7 +32,7 @@ def run(runfile):
 def main():
 	print("Bias Evaluation Program: This program performs evaluation on existing word embeddings.")
 	embeddings_src = "../Pretrained_Embeddings/"
-	val = input("Please specify the embeddings you wish to use by inputting an integer based on the following list of options: 1 -> 'Bolukbasi with CDA', 2 -> 'Bolukbasi with no CDA', 3 -> 'pretrained with CDA', 4 -> 'pretrained without CDA': ")
+	val = input("Please specify the embeddings you wish to use by inputting an integer based on the following list of options: 1 -> 'Bolukbasi with CDA', 2 -> 'Bolukbasi with no CDA', 3 -> 'pretrained with CDA', 4 -> 'pretrained without CDA', 5 -> 'compute for all files': ")
 	val = int(val)
 	if val == 1:
 		embeddings_src += "Bolukbasi_CDA.w2v"
@@ -41,14 +42,30 @@ def main():
 		embeddings_src += "CDAembeddings.w2v"
 	elif val == 4:
 		embeddings_src += "embeddings.w2v"
+	elif val == 5:
+		outputs_dict = {}
+		file_count = 0
+		for filename in os.listdir(embeddings_src):
+			if filename != ".DS_Store":
+				print(filename)
+				file = embeddings_src + filename
+				w2v_dict = EmbeddingFileToDict(file)
+				aligned_res = evalAlignedBias(w2v_dict)
+				unaligned_res = evalUnalignedBias(w2v_dict)
+				outputs_dict[file] = writeOutput(aligned_res, unaligned_res)
+				file_count += 1
+				if file_count == 8:
+					break
+		print(pd.DataFrame.from_dict(outputs_dict))
+		quit()
+
 	else:
 		print("You selected an invalid option. Try again.")
 	E = embeddings_src
 	w2v_dict = EmbeddingFileToDict(E)
 	aligned_res = evalAlignedBias(w2v_dict)
 	unaligned_res = evalUnalignedBias(w2v_dict)
-	print(aligned_res)
-	print(unaligned_res)
+	writeOutput(aligned_res, unaligned_res)
 
 
 
@@ -130,11 +147,23 @@ def evalUnalignedBias(word_vectors):
     ["baptism", "messiah", "catholicism", "resurrection", "christianity", "salvation", "protestant", "gospel", "trinity", "jesus", "christ", "christian", "cross", "catholic", "church"],
     ["allah", "ramadan", "turban", "emir", "salaam", "sunni", "koran", "imam", "sultan", "prophet", "veil", "ayatollah", "shiite", "mosque", "islam", "sheik", "muslim", "muhammad"],
     ["judaism", "jew", "synagogue", "torah", "rabbi"]]
-	gender_groups = [["he", "son", "his", "him", "father", "man", "boy", "himself", "male", "brother", "sons", "fathers", "men", "boys", "males", "brothers", "uncle", "uncles", "nephew", "nephews"], ["she", "daughter", "hers", "her", "mother", "woman", "girl", "herself", "female", "sister", "daughters", "mothers", "women", "girls", "sisters", "aunt", "aunts", "niece", "nieces"]] 
+	gender_groups = [["he", "son", "his", "him", "father", "man", "boy", "himself", "male", "brother", "sons", "fathers", "men", "boys", "males", "brothers", "uncle", "uncles", "nephew", "nephews"], ["she", "daughter", "her", "mother", "woman", "girl", "herself", "female", "sister", "daughters", "mothers", "women", "girls", "sisters", "aunt", "aunts", "niece", "nieces"]] 
+	# removed 'hers'
 	professions = target_words['garg_professions']
 	pooling = abs
 	unaligned_results_dict = compute_all_unaligned_estimates(word_vectors, gender_groups, professions, pooling, verbose=False)
-	return unaligned_results_dict
+	return unaligned_results_dict # gender bias results
+
+
+def writeOutput(aligned, unaligned):
+	results = {}
+	for key in aligned:
+		results[key] = aligned[key]
+	for key in unaligned:
+		results[key] = unaligned[key]
+	return results
+	
+
 
 
 

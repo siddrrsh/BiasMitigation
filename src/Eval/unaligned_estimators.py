@@ -104,6 +104,7 @@ def compute_manzini_bias(embeddings,
 		return averaged_bias
 		
 def compute_all_unaligned_estimates(embeddings, A_list, target_words, pooling_operation, verbose = False):
+	print("Computing unaligned estimators ... ")
 	unaligned_estimates = {}
 	if len(A_list) == 2:
 		A1, A2 = A_list 
