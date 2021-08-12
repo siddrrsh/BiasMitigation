@@ -24,6 +24,8 @@ import sys
 import re
 import os
 
+np.random.seed(2025)
+
 
 def run(runfile):
   with open(runfile,"r") as rnf:
@@ -57,6 +59,9 @@ def main():
 				if file_count == 8:
 					break
 		print(pd.DataFrame.from_dict(outputs_dict))
+		df = pd.DataFrame.from_dict(outputs_dict)
+		outputfile = 'output.csv'
+		df.to_csv(outputfile, sep='\t', encoding='utf-8')
 		quit()
 
 	else:
