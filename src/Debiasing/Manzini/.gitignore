@@ -1,0 +1,14 @@
+*.pyc
+*.ipynb_checkpoints*
+
+Debiasing/data/corpus/*
+Debiasing/data/w2vs/*
+Debiasing/data/prunedw2vs/*
+Debiasing/data/reddit.l2/*
+Debiasing/output/*
+
+Downstream/data/*
+Downstream/Models/savedModels/*
+Downstream/out/*
+
+
