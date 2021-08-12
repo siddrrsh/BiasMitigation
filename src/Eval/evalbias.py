@@ -15,6 +15,7 @@ from gensim import downloader
 import gensim.downloader as api
 from word_list import target_words, aligned_word_lists
 from aligned_estimators import compute_all_aligned_estimates
+from WordEmbedding import WordEmbedding
 import pandas as pd
 import numpy as np
 import gensim
@@ -43,7 +44,28 @@ def main():
 	else:
 		print("You selected an invalid option. Try again.")
 	E = embeddings_src
-	evalAlignedBias(E)
+	w2v_dict = EmbeddingFileToDict(E)
+	evalAlignedBias(w2v_dict)
+
+
+def EmbeddingFileToDict(E):
+	dict = {}
+	file = open(E, "r")
+	for line in file:
+		values = line.split()
+		curr_word = ""
+		count = 0
+		for value in values:
+			if count == 0:
+				curr_word = str(value)
+				dict[curr_word] = np.empty()
+			else:
+				dict[curr_word].append(float(value))
+			count += 1
+	file.close()
+	#print(dict['almonds'])
+	return dict
+
 
 
 
@@ -82,24 +104,14 @@ def getMetrics(E):
 # [pooling_operation] - Generally abs(); absolute value encodes intuition that if X is male biased and Y is female-biased, these bias should not "cancel"
 # [verbose] - Additionally return per-word bias scores
 
-def evalAlignedBias(E):
+def evalAlignedBias(word_vectors):
 	results = pd.DataFrame()
 	seed_pairs = aligned_word_lists
 	professions = target_words['bolukbasi_professions']
-	pooling = abs()
-	compute_all_aligned_estimates(E, seed_pairs, professions, pooling, verbose=False)
+	pooling = abs
+	compute_all_aligned_estimates(word_vectors, seed_pairs, professions, pooling, verbose=False)
 
-
-
-
-
-
-
-
-
-'''
 
 
 main()
-
 
