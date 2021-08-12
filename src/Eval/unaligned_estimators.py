@@ -1,7 +1,6 @@
 import numpy as np
 from primitive_operations import *
-​
-​
+
 # Reference: Garg et al., 2018 - https://www.pnas.org/content/115/16/E3635
 # Binary, unaligned bias estimator
 # [embeddings] - Map from words to vectors
@@ -18,16 +17,16 @@ def compute_garg_cosine_bias(embeddings,
 	mu_1, mu_2 = average([embeddings[w] for w in A1]), average([embeddings[w] for w in A2])
 	bias_per_target_word = {}
 	for target_word in target_words:
-		target_embedding = embeddings[target_word]
-		target_word_bias = pooling_operation(cosine(target_embedding, mu_1) - cosine(target_embedding, mu_2))
-		bias_per_target_word[target_word] = target_word_bias
+		if target_word in embeddings.keys():
+			target_embedding = embeddings[target_word]
+			target_word_bias = pooling_operation(cosine(target_embedding, mu_1) - cosine(target_embedding, mu_2))
+			bias_per_target_word[target_word] = target_word_bias
 	averaged_bias = average(list(bias_per_target_word.values()))
 	if verbose:
 		return averaged_bias, bias_per_target_word
 	else:
 		return averaged_bias
-​
-​
+		
 # Reference: Garg et al., 2018 - https://www.pnas.org/content/115/16/E3635
 # Binary, unaligned bias estimator
 # [embeddings] - Map from words to vectors
@@ -44,6 +43,7 @@ def compute_garg_euclidean_bias(embeddings,
 	mu_1, mu_2 = average([embeddings[w] for w in A1]), average([embeddings[w] for w in A2])
 	bias_per_target_word = {}
 	for target_word in target_words:
+		if target_word in embeddings.keys():
 			target_embedding = embeddings[target_word]
 			target_word_bias = pooling_operation(np.linalg.norm(target_embedding - mu_1) - np.linalg.norm(target_embedding - mu_2))
 			bias_per_target_word[target_word] = target_word_bias
@@ -52,8 +52,7 @@ def compute_garg_euclidean_bias(embeddings,
 		return averaged_bias, bias_per_target_word
 	else:
 		return averaged_bias
-​
-​
+		
 # Reference: Caliskan et al., 2017 - https://science.sciencemag.org/content/356/6334/183
 # Binary, unaligned bias estimator
 # [embeddings] - Map from words to vectors
@@ -69,17 +68,17 @@ def compute_caliskan_bias(embeddings,
 							verbose=False):
 	bias_per_target_word = {}
 	for target_word in target_words:
-		target_embedding = embeddings[target_word]
-		avg_sim_1 = average([cosine(target_embedding, embeddings[attribute_word]) for attribute_word in A1])
-		avg_sim_2 = average([cosine(target_embedding, embeddings[attribute_word]) for attribute_word in A2])
-		bias_per_target_word[target_word] = pooling_operation(avg_sim_1 - avg_sim_2)
+		if target_word in embeddings.keys():
+			target_embedding = embeddings[target_word]
+			avg_sim_1 = average([cosine(target_embedding, embeddings[attribute_word]) for attribute_word in A1])
+			avg_sim_2 = average([cosine(target_embedding, embeddings[attribute_word]) for attribute_word in A2])
+			bias_per_target_word[target_word] = pooling_operation(avg_sim_1 - avg_sim_2)
 	averaged_bias = average(list(bias_per_target_word.values()))
 	if verbose:
 		return averaged_bias, bias_per_target_word
 	else:
 		return averaged_bias
-​
-​
+		
 # Reference: Manzini et al., 2019 - https://www.aclweb.org/anthology/N19-1062/
 # Multiclass, unaligned bias estimator
 # [embeddings] - Map from words to vectors
@@ -95,15 +94,15 @@ def compute_manzini_bias(embeddings,
 	attribute_union = [a for Ai in A_list for a in Ai]
 	bias_per_target_word = {}
 	for target_word in target_words:
-		target_embedding = embeddings[target_word]
-		bias_per_target_word[target_word] = pooling_operation(average([cosine(target_embedding, embeddings[attribute_word]) for attribute_word in attribute_union]))
+		if target_word in embeddings.keys():
+			target_embedding = embeddings[target_word]
+			bias_per_target_word[target_word] = pooling_operation(average([cosine(target_embedding, embeddings[attribute_word]) for attribute_word in attribute_union]))
 	averaged_bias = average(list(bias_per_target_word.values()))
 	if verbose:
 		return averaged_bias, bias_per_target_word
 	else:
 		return averaged_bias
-​
-​
+		
 def compute_all_unaligned_estimates(embeddings, A_list, target_words, pooling_operation, verbose = False):
 	unaligned_estimates = {}
 	if len(A_list) == 2:

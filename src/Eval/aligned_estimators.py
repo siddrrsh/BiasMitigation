@@ -66,6 +66,7 @@ def compute_ethayarajh_bias(embeddings, bias_direction, target_words, pooling_op
 
 
 def compute_all_aligned_estimates(embeddings, seed_pairs, target_words, pooling_operation, verbose = False):
+	print("Computing aligned estimates ... ")
 	bias_direction_bolukbasi_implementation, _ = compute_bolukbasi_bias_direction_bolukbasi_implementation(embeddings, seed_pairs)
 	bias_direction_conventional_implementation, _  = compute_bolukbasi_bias_direction_conventional_implementation(embeddings, seed_pairs)
 

@@ -13,12 +13,12 @@ from gensim.test.utils import datapath
 from gensim.models import KeyedVectors
 from gensim import downloader
 import gensim.downloader as api
-from word_list import target_words, aligned_word_lists
+from word_list import target_words, aligned_word_lists, unaligned_word_lists
 from aligned_estimators import compute_all_aligned_estimates
+from unaligned_estimators import compute_all_unaligned_estimates
 from WordEmbedding import WordEmbedding
 import pandas as pd
 import numpy as np
-import gensim
 import numpy
 import re
 import os
@@ -45,7 +45,11 @@ def main():
 		print("You selected an invalid option. Try again.")
 	E = embeddings_src
 	w2v_dict = EmbeddingFileToDict(E)
-	evalAlignedBias(w2v_dict)
+	aligned_res = evalAlignedBias(w2v_dict)
+	unaligned_res = evalUnalignedBias(w2v_dict)
+	print(aligned_res)
+	print(unaligned_res)
+
 
 
 def EmbeddingFileToDict(E):
@@ -58,14 +62,13 @@ def EmbeddingFileToDict(E):
 		for value in values:
 			if count == 0:
 				curr_word = str(value)
-				dict[curr_word] = np.empty()
+				dict[curr_word] = []
 			else:
 				dict[curr_word].append(float(value))
 			count += 1
+		dict[curr_word] = np.array(dict[curr_word]) # convert to np array
 	file.close()
-	#print(dict['almonds'])
 	return dict
-
 
 
 
@@ -86,7 +89,7 @@ def prepend_line(file_name, line):
     os.rename(dummy_file, file_name)
 
 
-def getMetrics(E):
+def convertToKeyedVectors(E):
 	E = "../Pretrained_Embeddings/modified_embeddings.w2v"
 	f = open(E, "r")
 	data = f.read()
@@ -96,6 +99,7 @@ def getMetrics(E):
 	line_to_add = str(int(size)) + " " + str(dim) # length + dimension
 	prepend_line(E, line_to_add)
 	model = KeyedVectors.load_word2vec_format(E, binary=False)
+	return model
 
 
 # [embeddings] - Map from words to vectors
@@ -105,11 +109,37 @@ def getMetrics(E):
 # [verbose] - Additionally return per-word bias scores
 
 def evalAlignedBias(word_vectors):
-	results = pd.DataFrame()
 	seed_pairs = aligned_word_lists
 	professions = target_words['bolukbasi_professions']
 	pooling = abs
-	compute_all_aligned_estimates(word_vectors, seed_pairs, professions, pooling, verbose=False)
+	aligned_results_dict = compute_all_aligned_estimates(word_vectors, seed_pairs, professions, pooling, verbose=False)
+	return aligned_results_dict
+
+
+# [embeddings] - Map from words to vectors
+# [A_list] - List of list of words. Each inner list designates a social group (e.g. white, black, asian)
+# [target_words] - The words bias will be computed with respect to (e.g. professions)
+# [pooling_operation] - Generally abs(); absolute value encodes intuition that if X is male biased and Y is female-biased, these bias should not "cancel"
+# [verbose] - Additionally return per-word bias scores
+
+def evalUnalignedBias(word_vectors):
+	# no castillo, curator, firebrand, organist, confesses (from original word list)
+	seed_pairs = aligned_word_lists
+	all_religious_groups = [["gonzalez", "sanchez", "rivera", "martinez", "torres", "rodriguez", "perez", "lopez", "medina", "diaz", "garcia", "castro", "cruz"],
+    ["cho", "wong", "tang", "huang", "chu", "chung", "ng", "wu", "liu", "chen", "lin", "yang", "kim", "chang", "shah", "wang", "li", "khan", "singh", "hong"],
+    ["baptism", "messiah", "catholicism", "resurrection", "christianity", "salvation", "protestant", "gospel", "trinity", "jesus", "christ", "christian", "cross", "catholic", "church"],
+    ["allah", "ramadan", "turban", "emir", "salaam", "sunni", "koran", "imam", "sultan", "prophet", "veil", "ayatollah", "shiite", "mosque", "islam", "sheik", "muslim", "muhammad"],
+    ["judaism", "jew", "synagogue", "torah", "rabbi"]]
+	gender_groups = [["he", "son", "his", "him", "father", "man", "boy", "himself", "male", "brother", "sons", "fathers", "men", "boys", "males", "brothers", "uncle", "uncles", "nephew", "nephews"], ["she", "daughter", "hers", "her", "mother", "woman", "girl", "herself", "female", "sister", "daughters", "mothers", "women", "girls", "sisters", "aunt", "aunts", "niece", "nieces"]] 
+	professions = target_words['garg_professions']
+	pooling = abs
+	unaligned_results_dict = compute_all_unaligned_estimates(word_vectors, gender_groups, professions, pooling, verbose=False)
+	return unaligned_results_dict
+
+
+
+	
+
 
 
 
