@@ -53,8 +53,12 @@ def main():
 				file = embeddings_src + filename
 				w2v_dict = EmbeddingFileToDict(file)
 				aligned_res = evalAlignedBias(w2v_dict)
+				for key in aligned_res: # fix decimals
+					aligned_res[key] = float(round(aligned_res[key], 3))
 				unaligned_res = evalUnalignedBias(w2v_dict)
-				outputs_dict[file] = writeOutput(aligned_res, unaligned_res)
+				for key in unaligned_res: # fix decimals
+					unaligned_res[key] = float(round(unaligned_res[key], 3))
+				outputs_dict[filename[:-4]] = writeOutput(aligned_res, unaligned_res)
 				file_count += 1
 				if file_count == 8:
 					break
