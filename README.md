@@ -2,7 +2,7 @@
 
 Siddharth, Rishi 
 
-In this repo, we provide a full pipeline to train, combine, and analyze various bias mitigation methods. We also provide several metrics for comparison: 
+In this repo, we provide a full pipeline to train, combine, and analyze various bias mitigation methods (Bolukbasi et al., Manzini et al., Maudslay et al.). We also provide several metrics for comparison: 
 
 ## Metrics
 Word Embedding Association Test (WEAT) - Caliskan et al. (2017) 
