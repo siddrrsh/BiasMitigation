@@ -47,6 +47,13 @@ def main():
 	elif val == 5:
 		outputs_dict = {}
 		file_count = 0
+		E_list = []
+		for filename in os.listdir(embeddings_src):
+			if filename != ".DS_Store":
+				file = embeddings_src + filename
+				w2v_dict = EmbeddingFileToDict(file)
+				E_list.append(w2v_dict)
+
 		for filename in os.listdir(embeddings_src):
 			if filename != ".DS_Store":
 				print(filename)
@@ -96,7 +103,14 @@ def EmbeddingFileToDict(E):
 	file.close()
 	return dict
 
-
+def fixTargetWords():
+	# e_list = list of embeddings, i.e. a list of dictionaries from words to vectors
+	# target_words = list of target words you are working with:
+	# embedded_vocab = the things that have embeddings in every embedding in e_list (i.e. the intersection of the vocabularies of all the word embeddings)
+	embedded_vocab = set(e_list[0].keys()) # This line makes a set of words, which is the set of words that have vectors associated with them in the first embedding.
+	for embeddings in e_list[1:]:
+		embedding_vocab &= set(embeddings.keys()) # This line continues to update the same of words, refining it to remove words that are in some of the embedding files but not others, i.e. any word that does *not* have a vector in at least one embedding will be removed.
+	target_words &= embedded_vocab # do for the professions, for the male words, for the female words, etc.
 
 def prepend_line(file_name, line):
     """ Insert given string as a new line at the beginning of a file """
