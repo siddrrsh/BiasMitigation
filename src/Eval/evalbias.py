@@ -1,5 +1,5 @@
 '''
-System Requirements: Gensim (pip install gensim)
+System Requirements: Pandas, Numpy, Regex
 Must run using 'pythonw' not 'python3/python' (Gensim requirement as part of Anaconda)
 
 Metrics we compute:
